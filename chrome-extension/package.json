@@ -20,6 +20,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "INLINE_RUNTIME_CHUNK=false craco build",
+    "watch": "./scripts/watch.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -42,6 +43,7 @@
     ]
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.151"
+    "@types/chrome": "^0.0.151",
+    "webpack-extension-reloader": "^1.1.4"
   }
 }
