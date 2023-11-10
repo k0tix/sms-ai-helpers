@@ -9,12 +9,18 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*"],
-      "js": ["./static/js/content.js"]
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "./static/js/content.js"
+      ]
     }
   ],
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "tabs"
   ],
   "icons": {
     "16": "logo192.png",
