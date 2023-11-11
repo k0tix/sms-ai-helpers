@@ -1,0 +1,41 @@
+version: '3'
+services:
+  web:
+    image: nginx
+    volumes:
+      - .docker/default.conf:/etc/nginx/conf.d/default.conf
+      - .:/var/www/html
+    ports:
+      - 8080:80
+    restart: always
+    depends_on:
+      - php
+      - db
+    networks:
+      - network
+  php:
+    build: .docker
+    restart: always
+    volumes:
+      - .:/var/www/html
+    networks:
+      - network
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      - POSTGRES_DB=dbname
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=dbpass
+    ports:
+      - 5432:5432
+    networks:
+      - network
+    volumes:
+      - data:/var/lib/postgresql/data
+
+volumes:
+  data:
+
+networks:
+  network:
