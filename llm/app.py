@@ -1,9 +1,11 @@
 from flask import Flask, jsonify, request
 from transformers import pipeline
+import os
 
 
 app = Flask(__name__)
-summarizer = pipeline("summarization", model='app/amazing-super-AI')
+#print(f"DIRRRR: {os.listdir()}")
+summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 
 @app.route("/summarize", methods=["POST"])
 def predict():
