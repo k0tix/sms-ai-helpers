@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build-zip": "npm run build && cd dist && zip -r ../smsummarizer-extension.zip . && cd .."
   },
   "dependencies": {
     "@nextui-org/react": "^1.0.0-beta.12",
