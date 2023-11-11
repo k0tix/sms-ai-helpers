@@ -23,7 +23,9 @@
     "permissions": [
         "activeTab",
         "tabs",
-        "scripting",
         "storage"
-    ]
+    ],
+    "icons": {
+        "32": "src/icons/favicon.png"
+    }
 }
