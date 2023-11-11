@@ -15,7 +15,7 @@ class DB
     }
     public static function getDBStatic(): PDO
     {
-        return new PDO("pgsql:host=db;port=5432;dbname=". $_ENV["DBNAME"].";", $_ENV["DBUSER"], $_ENV["DBPASS"]);
+        return new PDO("pgsql:host=". $_ENV["DBHOST"] . ";port=" . $_ENV["DBPORT"] . ";dbname=dbname;", 'dbuser', 'dbpass');
     }
     public function getApiKeys(): array
     {
