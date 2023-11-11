@@ -9,7 +9,7 @@ variable "template" {
 }
 
 variable "app-scaling" {
-  default = 3
+  default = 1
 }
 
 variable "plans" {
