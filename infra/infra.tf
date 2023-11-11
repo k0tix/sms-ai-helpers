@@ -1,82 +1,56 @@
+# set the provider version
 terraform {
   required_providers {
     upcloud = {
-      source  = "UpCloudLtd/upcloud"
-      version = "~> 2.4"
+      source = "UpCloudLtd/upcloud"
+      version = "~> 2.0"
     }
   }
 }
 
-provider "upcloud" {}
-
-module "app" {
-  source = "UpCloudLtd/highly-available-app/upcloud"
-
-  app_name                   = "super_app"
-  zone                       = "pl-waw1"
-  private_network_cidr       = "10.0.42.0/24"
-  servers_port               = 3000
-  domains                    = ["my-domain.net"]
-  servers_ssh_keys           = ["your-public-ssh-key"]
-  servers_firewall_enabled   = true
-  servers_allowed_remote_ips = ["123.123.123.123"]
+# configure the provider
+provider "upcloud" {
+  # Your UpCloud credentials are read from the environment variables:
+  username="apinavapina"
+  password="-w{=S{EP}cd73(;g/$KeqI:2zcpKW0w("
 }
 
-# Additional user for our database
-resource "upcloud_managed_database_user" "wordpress" {
-  service  = module.app.database_id
-  username = "wordpress"
-  password = "supersecurepassword"
-}
+# create a server
+resource "upcloud_server" "example" {
+  hostname = "terraform.example.tld"
+  zone     = "de-fra1"
+  plan     = "1xCPU-1GB"
 
-# Additional logical database
-resource "upcloud_managed_database_logical_database" "wordpress" {
-  service = module.app.database_id
-  name    = "wordpress"
-}
-
-# Additional frontend rule for our main load balancer frontend
-resource "upcloud_loadbalancer_frontend_rule" "test_env" {
-  frontend = module.app.loadbalancer_frontend_id
-  name     = "test_env"
-  priority = 10
-
-  matchers {
-    url_param {
-      method = "exact"
-      name   = "test"
-      value  = "true"
-    }
+  # Declare network interfaces
+  network_interface {
+    type = "public"
   }
 
-  actions {
-    http_return {
-      content_type = "text/html"
-      status       = 200
-      payload      = base64encode("This is test environment")
+  network_interface {
+    type = "utility"
+  }
+
+  # Include at least one public SSH key
+  login {
+    user = "terraform"
+    keys = [
+      "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCWMexwQdQVDbTfXm/fNszZBdye8zurX/duJwd3PrSwRxWuaOg5yGJUakkcEiM5A+EdmIgCRRdkNpfplLU4ei1yStm+R7ymSaV0yPrCMa1S8xqqX/RdfotsvCyFEN1V606OYVyZmpcop97p9BqtJICBBSrz/FgMUM8xPKdw2hN+6ep0kzeJ4KcX0teuk3V8xqYcY+lN++VB0Asl9B3YjmUYvngu2tKYGKzYoCX99v6En2aXdAbW1pTWqQEGVmweuhNWaCcI6mC8vgWUS9KRQ8S3C/tDKFjSSp9K1Be+kECWBiZzXuMSXrX7QnHFbvayVCzMYQXiimf/ZwNLTUfjgkyWVEDP6GtwJdMKaPHu94AcgatfrDrzFfGUDExBale4AB9O2Exyfpu4CQVboxEoOD3PUQY53tSKuhmu7EbJlQttJ2R+AISKJEjV6tBAZFPiVVWMzD02vcuSMTjeyY6ZTflJjIMpxHJLz8GIBOgeJPfiEx/w3jC5ekKbJzQngUZiixE= juuusto@Oskaris-Air",
+    ]
+    create_password = false
+  }
+
+  # Provision the server with Ubuntu
+  template {
+    storage = "Ubuntu Server 20.04 LTS (Focal Fossa)"
+
+    # Use all the space allotted by the selected simple plan
+    size = 25
+
+    # Enable backups
+    backup_rule {
+      interval  = "daily"
+      time      = "0100"
+      retention = 8
     }
   }
-}
-
-# Additional backend for our load balancer
-resource "upcloud_loadbalancer_backend" "extra_backend" {
-  loadbalancer = module.app.loadbalancer_id
-  name         = "i_have_no_idea_what_this_does"
-}
-
-# Additional frontend for our load balancer
-resource "upcloud_loadbalancer_frontend" "extra_frontend" {
-  loadbalancer         = module.app.loadbalancer_id
-  name                 = "no_idea_what_it_does_either"
-  mode                 = "http"
-  port                 = 8080
-  default_backend_name = resource.upcloud_loadbalancer_backend.extra_backend.name
-}
-
-output "servers_public_ips" {
-  value = module.app.web_servers_public_ips
-}
-
-output "url" {
-  value = module.app.app_url
 }
