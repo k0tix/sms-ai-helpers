@@ -1,6 +1,9 @@
 <?php
-include "../src/DB.php";
-include "../src/Routes.php";
+include_once "../src/DB.php";
+include_once "../src/Routes.php";
+include_once "../src/Helper.php";
+
+Helper::loadEnv("../.env");
 $db = new DB();
 
 if(!isset(getallheaders()["Apikey"]) || !in_array(getallheaders()["Apikey"], $db->getApiKeys())){

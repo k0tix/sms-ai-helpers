@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-include "Helper.php";
+include_once "Helper.php";
 
 class Routes
 {
