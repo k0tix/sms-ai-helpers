@@ -40,6 +40,7 @@ class Helper
     {
         try {
             $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             return curl_exec($ch);
         } catch (Throwable $th) {
@@ -86,19 +87,31 @@ class Helper
     }
     public static function generateLLMresult(array $data, float $modifier = 1): string
     {
-        $pagesJson = json_encode(["input_data" => $data]);
-        $url = $_ENV["LLM_API"];
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Accept: application/json', 'Content-Type: application/json'));
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $pagesJson);
-        
-        $resp = curl_exec($curl);
-        curl_close($curl);
-
-        return $resp;
+        set_time_limit(600);
+        ini_set('max_execution_time', '600');
+        ini_set('max_input_time', '600');
+        if($modifier == (int) $modifier) {
+            $modifier += 0.01;
+        }
+        $pagesJson = json_encode(["max_length" => 160, 'scizo_meter' => $modifier, "input_data" => $data]);
+        try {
+            $url = $_ENV["LLM_API"];
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl,CURLOPT_TIMEOUT,1000);
+            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array('Accept: application/json', 'Content-Type: application/json'));
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $pagesJson);
+            
+            $resp = curl_exec($curl);
+            curl_close($curl);
+    
+            return $resp;
+        } catch (Throwable $e) {
+        }
+        return "";
     }
     public static function generateB64Pdf(string $content): string
     {
