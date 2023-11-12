@@ -63,7 +63,7 @@ class Routes
         $query->execute([$_GET["id"]]);
         $data = $query->fetch(PDO::FETCH_ASSOC);
         header("Content-type: text/plain");
-        header("Content-Disposition: attachment; filename=summary.txt");
+        //header("Content-Disposition: attachment; filename=summary.txt");
         return [200, $data["response"]];
     }
 

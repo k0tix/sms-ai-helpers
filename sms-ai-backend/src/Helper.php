@@ -84,6 +84,7 @@ class Helper
     {
         foreach (explode("\n", file_get_contents($path)) as $envVar) {
             $envVarSplit = explode("=", $envVar);
+            if(count($envVarSplit)<2)continue;
             $_ENV[$envVarSplit[0]] = $envVarSplit[1];
         }
     }
