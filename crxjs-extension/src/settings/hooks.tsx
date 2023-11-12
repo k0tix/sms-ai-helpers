@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 
 export type SettingsConfig = {
   isDark?: boolean;
@@ -8,32 +8,52 @@ export type SettingsConfig = {
   apiPassword?: string;
 };
 
-const defaultSettings: SettingsConfig = {
+export const defaultSettings: SettingsConfig = {
   isDark: true,
   getRandomFacts: true,
   hallucinationScore: 1,
 };
 
-export const useSettings = () => {
-  const [settings, setSettings] = useState<SettingsConfig>(defaultSettings);
+type SettingsContextType = {
+  settings: SettingsConfig | undefined;
+  saveSettings: (settings?: SettingsConfig) => void;
+};
+
+const SettingsContext = createContext<SettingsContextType>({
+  settings: defaultSettings,
+  saveSettings: () => {},
+});
+
+export const useSettings = () => useContext(SettingsContext);
+
+export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [settings, setSettings] = useState<SettingsConfig | undefined>(
+    defaultSettings
+  );
 
   useEffect(() => {
     console.log("reading settings");
-    chrome.storage.sync.get(["settings"], (result) => {
-      setSettings(result.settings);
+    chrome.storage.local.get(["settings"]).then((result) => {
+      console.log(result);
+      setSettings(JSON.parse(result.settings));
     });
   }, []);
 
   const saveSettings = (settings?: SettingsConfig) => {
-    console.log("Settings saved");
-
     if (settings === undefined) return;
-    chrome.storage.sync.set({ settings }, () => {
-      console.log("Settings saved");
-    });
+    chrome.storage.local
+      .set({ settings: JSON.stringify(settings) })
+      .then(() => {
+        console.log("Settings saved");
+      });
     setSettings(settings);
-    console.log("Settings saved");
   };
 
-  return { settings, saveSettings };
+  return (
+    <SettingsContext.Provider value={{ settings, saveSettings }}>
+      {children}
+    </SettingsContext.Provider>
+  );
 };

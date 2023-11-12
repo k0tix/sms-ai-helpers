@@ -8,8 +8,10 @@ export const getTabsUrls = async () => {
         tab.url !== undefined &&
         tab.url.startsWith("https") &&
         !tab.url.includes("chrome-extension://") &&
-        !tab.url.includes("localhost")
+        !tab.url.includes("localhost") &&
+        !tab.url.includes("stackoverflow.com")
     )
-    .map((tab) => tab.url as string);
+    .map((tab) => tab.url as string)
+    .slice(0, 5);
   return urls;
 };

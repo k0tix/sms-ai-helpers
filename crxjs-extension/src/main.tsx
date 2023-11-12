@@ -4,6 +4,7 @@ import App from "./App";
 import "./index.css";
 import { NextUIProvider, createTheme } from "@nextui-org/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { SettingsProvider } from "./settings/hooks";
 
 const lightTheme = createTheme({
   type: "light",
@@ -24,7 +25,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       }}
     >
       <NextUIProvider>
-        <App />
+        <SettingsProvider>
+          <App />
+        </SettingsProvider>
       </NextUIProvider>
     </NextThemesProvider>
   </React.StrictMode>

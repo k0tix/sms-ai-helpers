@@ -14,7 +14,12 @@ import Monkey from "./Monkey";
 import validator from "validator";
 import Typewriter, { Typewriters } from "./Typewriter";
 import SettingsModal from "./settings/Settings";
-import { isBackendWorking, summarizeUrls } from "./api";
+import {
+  getRandomFact,
+  isBackendWorking,
+  randomFacts,
+  summarizeUrls,
+} from "./api";
 import { getTabsUrls } from "./utils";
 import { useSettings } from "./settings/hooks";
 
@@ -24,13 +29,20 @@ function App() {
   const [isCrunchingSummary, setIsCrunchingSummary] = useState<boolean>(false);
   const [isBackendRunning, setIsBackendRunning] = useState<boolean>(true);
   const [settingsVisible, setSettingsVisible] = useState<boolean>(false);
-  const { settings } = useSettings();
   const [currentEventId, setCurrentEventId] = useState<string>("");
+  const [randomFact, setRandomFact] = useState<string>("");
+  const { settings } = useSettings();
 
   const handler = () => setSettingsVisible(true);
   const closeHandler = () => {
     setSettingsVisible(false);
     console.log("closed");
+  };
+
+  const readSettings = async () => {
+    const data = await chrome.storage.local.get(["settings"]);
+    const settings = JSON.parse(data.settings);
+    return settings;
   };
 
   const readPhoneNumber = () => {
@@ -64,7 +76,6 @@ function App() {
     getTabsUrls().then((urls) => {
       console.log(urls);
     });
-    console.log(settings);
   }, []);
 
   return (
@@ -106,7 +117,50 @@ function App() {
 
       <Monkey
         message={
-          isCrunchingSummary ? <CrunchingSummaryMessage /> : <DefaultMessage />
+          isCrunchingSummary ? (
+            <CrunchingSummaryMessage />
+          ) : randomFact !== "" ? (
+            <Card
+              key={randomFact}
+              style={{
+                margin: "1em",
+                padding: "1em",
+              }}
+              isHoverable
+              variant="bordered"
+            >
+              <Typewriter
+                text={randomFact}
+                delay={30}
+                onFinished={async () => {
+                  await new Promise((resolve) => setTimeout(resolve, 3000));
+                  setRandomFact("");
+                }}
+              />
+            </Card>
+          ) : (
+            <Card
+              key={randomFact}
+              style={{
+                margin: "1em",
+                padding: "1em",
+              }}
+              isHoverable
+              variant="bordered"
+            >
+              <Typewriter
+                text="Tired of looking through all your tabs? No worries. Our helpful
+        little buddy will summarize all of the necessary information and
+        send it straight to your phone!"
+                delay={30}
+                onFinished={async () => {
+                  await new Promise((resolve) => setTimeout(resolve, 5000));
+                  const fact = await getRandomFact();
+                  setRandomFact(fact);
+                }}
+              />
+            </Card>
+          )
         }
         type={isCrunchingSummary ? "buysell" : "idle"}
       />
@@ -144,26 +198,29 @@ function App() {
 
         <Spacer y={0.5} />
         <Button
+          key={`${phoneNumberInvalid}-${phoneNumber}`}
           shadow
           animated
           style={{ width: "100%", fontSize: 16, fontWeight: "bold" }}
           disabled={
             phoneNumberInvalid ||
             phoneNumber === undefined ||
-            phoneNumber === ""
+            phoneNumber === "" ||
+            !settings?.apiPassword ||
+            !settings?.apiUser
           }
           size="lg"
           onPress={async () => {
-            if (!phoneNumber || !settings?.apiUser || !settings?.apiPassword)
-              return;
+            if (!phoneNumber) return;
 
             setIsCrunchingSummary(true);
             const urls = await getTabsUrls();
-            // const eventId = await summarizeUrls(
-            //   urls,
-            //   phoneNumber,
-            //   `${settings.apiUser}:${settings.apiPassword}`
-            // );
+            const settings = await readSettings();
+            const eventId = await summarizeUrls(
+              urls,
+              phoneNumber,
+              `${settings.apiUser}:${settings.apiPassword}`
+            );
 
             // setCurrentEventId(eventId);
 
@@ -174,7 +231,9 @@ function App() {
         >
           {phoneNumberInvalid || phoneNumber === undefined || phoneNumber === ""
             ? "We need your phone number 🥺"
-            : "Send summary 🚀"}
+            : !settings?.apiPassword || !settings?.apiUser
+            ? "Configure your credentials 🫎"
+            : `Send summary 🚀`}
         </Button>
       </div>
       <Spacer y={1} />
@@ -198,8 +257,11 @@ const DefaultMessage = () => (
     <Typewriter
       text="Tired of looking through all your tabs? No worries. Our helpful
 little buddy will summarize all of the necessary information and
-send it straight to your phone"
+send it straight to your phone!"
       delay={30}
+      onFinished={async () => {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      }}
     />
   </Card>
 );
@@ -223,6 +285,19 @@ const CrunchingSummaryMessage = () => (
       delay={30}
       textSwitchDelay={2000}
     />
+  </Card>
+);
+
+const LocalRandomFacts = () => (
+  <Card
+    style={{
+      margin: "1em",
+      padding: "1em",
+    }}
+    isHoverable
+    variant="bordered"
+  >
+    <Typewriters texts={randomFacts} delay={30} textSwitchDelay={5000} />
   </Card>
 );
 

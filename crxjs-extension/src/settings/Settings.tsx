@@ -9,9 +9,9 @@ import {
   useTheme,
 } from "@nextui-org/react";
 import { useTheme as useNextTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { MdOutlineDarkMode, MdOutlineLightMode } from "react-icons/md";
-import { SettingsConfig } from "./hooks";
+import { SettingsConfig, defaultSettings, useSettings } from "./hooks";
 
 type SettingsModalProps = {
   settingsVisible: boolean;
@@ -24,7 +24,7 @@ const SettingsModal = ({
 }: SettingsModalProps) => {
   const { setTheme } = useNextTheme();
   const { isDark, type } = useTheme();
-  const [settings, saveSettings] = useState<SettingsConfig>();
+  const { settings, saveSettings } = useSettings();
 
   return (
     <Modal
@@ -54,8 +54,9 @@ const SettingsModal = ({
           fullWidth
           color="primary"
           size="lg"
+          aria-label="api user"
           labelLeft="user"
-          value={settings?.apiUser}
+          value={settings?.apiUser || ""}
           onChange={(event) => {
             saveSettings({ ...settings, apiUser: event.target.value });
           }}
@@ -65,8 +66,9 @@ const SettingsModal = ({
           fullWidth
           color="primary"
           size="lg"
+          aria-label="api password"
           labelLeft="password"
-          value={settings?.apiPassword}
+          value={settings?.apiPassword || ""}
           onChange={(event) => {
             saveSettings({ ...settings, apiPassword: event.target.value });
           }}
@@ -80,6 +82,7 @@ const SettingsModal = ({
           <Spacer x={5} />
 
           <Switch
+            aria-label="dark mode switch"
             checked={isDark}
             onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
           />
@@ -89,20 +92,22 @@ const SettingsModal = ({
             Get random facts while processing
           </Text>{" "}
           <Switch
-            checked={settings?.getRandomFacts}
+            aria-label="random facts switch"
+            checked={settings?.getRandomFacts || false}
             onChange={(e) => {
               saveSettings({ ...settings, getRandomFacts: e.target.checked });
             }}
           />
         </Row>
         <Input
+          aria-label="hallucination score"
           onChange={(event) => {
             saveSettings({
               ...settings,
               hallucinationScore: Number(event.target.value),
             });
           }}
-          value={settings?.hallucinationScore}
+          value={settings?.hallucinationScore || 1}
           bordered
           type="number"
           min={0}
