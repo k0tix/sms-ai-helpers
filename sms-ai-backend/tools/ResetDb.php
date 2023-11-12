@@ -10,4 +10,4 @@ $db->getDB()->query("CREATE TABLE api_keys (id SERIAL PRIMARY KEY, api_key VARCH
 $db->getDB()->prepare("INSERT INTO api_keys (api_key) values (?)")->execute([$_ENV["DEFAULT_API_KEY"]]);
 
 $db->getDB()->query("DROP TABLE IF EXISTS pending_data");
-$db->getDB()->query("CREATE TABLE pending_data (id SERIAL PRIMARY KEY, status VARCHAR NOT NULL, phone VARCHAR NOT NULL, response VARCHAR)");
+$db->getDB()->query("CREATE TABLE pending_data (id SERIAL PRIMARY KEY, status VARCHAR NOT NULL, phone VARCHAR NOT NULL, response VARCHAR, eventid VARCHAR NOT NULL UNIQUE)");

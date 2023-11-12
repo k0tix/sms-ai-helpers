@@ -35,12 +35,31 @@ class Routes
         return [200, "'yes'"];
     }
 
+    public function randomfactGET()
+    {
+        $url = "https://en.wikipedia.org/wiki/Stock_car_racing";
+        $page = Helper::cleanupUrlData(Helper::getUrlData($url));
+        $result = Helper::generateLLMresult([$page], 1);
+        return [200, $result];
+    }
+
     public function summarizeUrlsGET($decodedBody)
     {
         $query = $this->db->getDB()
-            ->prepare("SELECT * FROM pending_data WHERE id=?");
+            ->prepare("SELECT * FROM pending_data WHERE eventid=?");
         $query->execute([$_GET["id"]]);
-        $data = $query->fetchAll(PDO::FETCH_ASSOC);
+        $data = $query->fetch(PDO::FETCH_ASSOC);
+        $retData = ["id" => $data["eventid"], "status" => $data["status"]];
+        return [200, json_encode($retData)];
+    }
+
+    public function dlPdfGET($decodedBody)
+    {
+        // TODO: finish this
+        $query = $this->db->getDB()
+            ->prepare("SELECT response FROM pending_data WHERE eventid=?");
+        $query->execute([$_GET["id"]]);
+        $data = $query->fetch(PDO::FETCH_ASSOC);
         return [200, json_encode($data)];
     }
 
@@ -56,33 +75,30 @@ class Routes
         }
         $pages = [];
         foreach ($decodedBody["urls"] as $url) {
-            $page = Helper::getUrlData($url);
-            // TODO: strip tags from urls 
+            $page = Helper::cleanupUrlData(Helper::getUrlData($url));
             $pages[] = $page;
         }
 
-
-        $pagesJson = json_encode($pages);
+        $eventId = Helper::generateNewEventId();
         $this->db->getDB()
-            ->prepare("INSERT INTO pending_data (status, phone) values (?,?)")
-            ->execute(["PENDING", $decodedBody["phone"]]);
+            ->prepare("INSERT INTO pending_data (status, phone, eventid) values (?,?,?)")
+            ->execute(["PENDING", $decodedBody["phone"], $eventId]);
         $latestId = $this->db->getDB()->lastInsertId();
 
 
-        echo json_encode(["id" => $latestId]);
+        echo json_encode(["id" => $eventId]);
         fastcgi_finish_request();
 
 
-        // TODO: send data to ai palikka.
-        $result = "testi";
-        sleep(10);
+        $result = Helper::generateLLMresult($pages, 1);
 
         $this->db->getDB()
             ->prepare("UPDATE pending_data SET status = ?, response = ? WHERE id = ?")
             ->execute(["DONE", $result, $latestId]);
 
         // TODO: sms content
-        $smsResult = Helper::sendSMSTo($decodedBody["phone"], "Toimiiko sms?", $decodedBody["smsAuth"]);
+        $dlUrl = "<url>". "/dlPdf?id=" . $eventId;
+        $smsResult = Helper::sendSMSTo($decodedBody["phone"], "SMSummarizer result is ready, dl at: $dlUrl", $decodedBody["smsAuth"]);
 
         if ($smsResult) {
             $this->db->getDB()
