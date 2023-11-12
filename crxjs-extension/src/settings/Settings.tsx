@@ -11,24 +11,11 @@ import {
 import { useTheme as useNextTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { MdOutlineDarkMode, MdOutlineLightMode } from "react-icons/md";
+import { SettingsConfig } from "./hooks";
 
 type SettingsModalProps = {
   settingsVisible: boolean;
   closeHandler: () => void;
-};
-
-type SettingsConfig = {
-  isDark?: boolean;
-  getRandomFacts?: boolean;
-  hallucinationScore?: number;
-  apiUser?: string;
-  apiPassword?: string;
-};
-
-const defaultSettings: SettingsConfig = {
-  isDark: true,
-  getRandomFacts: true,
-  hallucinationScore: 1,
 };
 
 const SettingsModal = ({
@@ -37,20 +24,7 @@ const SettingsModal = ({
 }: SettingsModalProps) => {
   const { setTheme } = useNextTheme();
   const { isDark, type } = useTheme();
-  const [settings, setSettings] = useState<SettingsConfig>(defaultSettings);
-  useEffect(() => {
-    chrome.storage.sync.get(["settings"], (result) => {
-      setSettings(result.settings);
-    });
-  }, []);
-
-  const saveSettings = (settings?: SettingsConfig) => {
-    if (settings === undefined) return;
-    chrome.storage.sync.set({ settings }, () => {
-      console.log("Settings saved");
-    });
-    setSettings(settings);
-  };
+  const [settings, saveSettings] = useState<SettingsConfig>();
 
   return (
     <Modal

@@ -13,30 +13,19 @@ import { MdOutlinePhone, MdOutlineSettings } from "react-icons/md";
 import Monkey from "./Monkey";
 import validator from "validator";
 import Typewriter, { Typewriters } from "./Typewriter";
-import SettingsModal from "./Settings";
-
-const apiUrl = "http://localhost:8080";
-const headers = {
-  Apikey: "oskariPoju23",
-};
-
-const apiRequest = async (url: string, method: string, body?: any) => {
-  const response = await fetch(url, {
-    method,
-    headers,
-    body: JSON.stringify(body),
-  });
-  const data = await response.json();
-  return data;
-};
+import SettingsModal from "./settings/Settings";
+import { isBackendWorking, summarizeUrls } from "./api";
+import { getTabsUrls } from "./utils";
+import { useSettings } from "./settings/hooks";
 
 function App() {
   const [phoneNumber, setPhoneNumber] = useState<string>();
   const [phoneNumberInvalid, setPhoneNumberInvalid] = useState<boolean>(false);
   const [isCrunchingSummary, setIsCrunchingSummary] = useState<boolean>(false);
   const [isBackendRunning, setIsBackendRunning] = useState<boolean>(true);
-
   const [settingsVisible, setSettingsVisible] = useState<boolean>(false);
+  const { settings } = useSettings();
+  const [currentEventId, setCurrentEventId] = useState<string>("");
 
   const handler = () => setSettingsVisible(true);
   const closeHandler = () => {
@@ -52,13 +41,8 @@ function App() {
   };
 
   const checkIsBackendRunning = async () => {
-    const response = await fetch(apiUrl + "/heartbeat", { headers });
-    const data = await response.text();
-    if (data === "'yes'") {
-      setIsBackendRunning(true);
-    } else {
-      setIsBackendRunning(false);
-    }
+    const isWorking = await isBackendWorking();
+    setIsBackendRunning(isWorking);
   };
 
   const savePhoneNumber = (number: string) => {
@@ -74,20 +58,13 @@ function App() {
     });
   };
 
-  const getTabsUrls = async () => {
-    const tabs = await chrome.tabs.query({});
-    const urls = tabs
-      .filter((tab) => tab.url !== undefined && tab.url.startsWith("http"))
-      .map((tab) => tab.url);
-    return urls;
-  };
-
   useEffect(() => {
     checkIsBackendRunning();
     readPhoneNumber();
     getTabsUrls().then((urls) => {
       console.log(urls);
     });
+    console.log(settings);
   }, []);
 
   return (
@@ -177,9 +154,18 @@ function App() {
           }
           size="lg"
           onPress={async () => {
+            if (!phoneNumber || !settings?.apiUser || !settings?.apiPassword)
+              return;
+
             setIsCrunchingSummary(true);
             const urls = await getTabsUrls();
-            console.log(urls);
+            // const eventId = await summarizeUrls(
+            //   urls,
+            //   phoneNumber,
+            //   `${settings.apiUser}:${settings.apiPassword}`
+            // );
+
+            // setCurrentEventId(eventId);
 
             // wait 5 seconds
             await new Promise((resolve) => setTimeout(resolve, 10000));
