@@ -9,33 +9,43 @@ class Helper
     ];
     public static function cleanupUrlData(string $data): string
     {
-        $dom = new DOMDocument;
-        libxml_use_internal_errors(true);
-        $dom->loadHTML($data);
-        libxml_use_internal_errors(false);
+        try {
+            $dom = new DOMDocument;
+            libxml_use_internal_errors(true);
+            $dom->loadHTML($data);
+            libxml_use_internal_errors(false);
 
-        foreach(["style", "script", "link", "footer"] as $elem) {
-            $list = $dom->getElementsByTagName($elem);
+            foreach(["style", "script", "link", "footer"] as $elem) {
+                $list = $dom->getElementsByTagName($elem);
+                while ($list->length > 0) {
+                    $p = $list->item(0);
+                    $p->parentNode->removeChild($p);
+                }
+            }
+            $text = "";
+            $list = $dom->getElementsByTagName("div");
             while ($list->length > 0) {
                 $p = $list->item(0);
+                $text .= $p->textContent;
                 $p->parentNode->removeChild($p);
             }
+            $stringbody = preg_replace("/[\n\t]/", '', $text);
+            return strip_tags($stringbody);
+        } catch (Throwable $th) {
+            //throw $th;
         }
-        $text = "";
-        $list = $dom->getElementsByTagName("div");
-        while ($list->length > 0) {
-            $p = $list->item(0);
-            $text .= $p->textContent;
-            $p->parentNode->removeChild($p);
-        }
-        $stringbody = preg_replace("/[\n\t]/", '', $text);
-        return strip_tags($stringbody);
+        return "";
     }
     public static function getUrlData(string $url): string
     {
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        return curl_exec($ch);
+        try {
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            return curl_exec($ch);
+        } catch (Throwable $th) {
+        }
+       
+        return "";
     }
     public static function sendSMSTo(string $phoneNumber, string $message, string $auth): bool
     {
