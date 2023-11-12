@@ -38,9 +38,11 @@ class Routes
     public function randomfactGET()
     {
         $url = "https://en.wikipedia.org/wiki/Special:Random";
-        $page = Helper::cleanupUrlData(Helper::getUrlData($url));
-        $result = Helper::generateLLMresult([$page], 2.1);
-        return [200, $result];
+        $curlRes = Helper::getUrlData($url);
+        $page = Helper::cleanupUrlData($curlRes[0]);
+        $result = Helper::generateLLMresult([$page], 2.1, 50);
+        $fact = $curlRes[1]." - ".json_decode($result, true)[0]["summary_text"];
+        return [200, $fact];
     }
 
     public function summarizeUrlsGET($decodedBody)
@@ -53,14 +55,16 @@ class Routes
         return [200, json_encode($retData)];
     }
 
-    public function dlPdfGET($decodedBody)
+    public function summaryGET($decodedBody)
     {
         // TODO: finish this
         $query = $this->db->getDB()
             ->prepare("SELECT response FROM pending_data WHERE eventid=?");
         $query->execute([$_GET["id"]]);
         $data = $query->fetch(PDO::FETCH_ASSOC);
-        return [200, json_encode($data)];
+        header("Content-type: text/plain");
+        header("Content-Disposition: attachment; filename=summary.txt");
+        return [200, $data["response"]];
     }
 
     public function summarizeUrlsPOST($decodedBody)
@@ -75,7 +79,7 @@ class Routes
         }
         $pages = [];
         foreach ($decodedBody["urls"] as $url) {
-            $page = Helper::cleanupUrlData(Helper::getUrlData($url));
+            $page = Helper::cleanupUrlData(Helper::getUrlData($url)[0]);
             $pages[] = $page;
         }
 
@@ -91,13 +95,18 @@ class Routes
 
 
         $result = Helper::generateLLMresult($pages, 1.01);
+        $resultArr = json_decode($result, true);
 
+        $endResult = "";
+        foreach ($resultArr as $i => $description) {
+            $endResult .= $decodedBody["urls"][$i]. "\n------------------------------------------\n";
+            $endResult .= $description['summary_text'] . "\n\n\n";
+        }
         $this->db->getDB()
             ->prepare("UPDATE pending_data SET status = ?, response = ? WHERE id = ?")
-            ->execute(["DONE", $result, $latestId]);
+            ->execute(["DONE", $endResult, $latestId]);
 
-        // TODO: sms content
-        $dlUrl = "<url>". "/dlPdf?id=" . $eventId;
+        $dlUrl = $_ENV["DL_BASE_URL"] . "/summary?id=" . $eventId;
         $smsResult = Helper::sendSMSTo($decodedBody["phone"], "SMSummarizer result is ready, dl at: $dlUrl", $decodedBody["smsAuth"]);
 
         if ($smsResult) {

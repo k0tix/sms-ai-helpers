@@ -36,17 +36,17 @@ class Helper
         }
         return "";
     }
-    public static function getUrlData(string $url): string
+    public static function getUrlData(string $url): array
     {
         try {
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            return curl_exec($ch);
+            return [curl_exec($ch), curl_getinfo($ch, CURLINFO_EFFECTIVE_URL)];
         } catch (Throwable $th) {
         }
        
-        return "";
+        return ["",""];
     }
     public static function sendSMSTo(string $phoneNumber, string $message, string $auth): bool
     {
@@ -85,7 +85,7 @@ class Helper
             $_ENV[$envVarSplit[0]] = $envVarSplit[1];
         }
     }
-    public static function generateLLMresult(array $data, float $modifier = 1): string
+    public static function generateLLMresult(array $data, float $modifier = 1, int $lim = 150): string
     {
         set_time_limit(600);
         ini_set('max_execution_time', '600');
@@ -93,7 +93,7 @@ class Helper
         if($modifier == (int) $modifier) {
             $modifier += 0.01;
         }
-        $pagesJson = json_encode(["max_length" => 160, 'scizo_meter' => $modifier, "input_data" => $data]);
+        $pagesJson = json_encode(["max_length" => $lim, 'scizo_meter' => $modifier, "input_data" => $data]);
         try {
             $url = $_ENV["LLM_API"];
             $curl = curl_init();
