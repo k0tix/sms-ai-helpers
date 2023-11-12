@@ -50,7 +50,7 @@ class Helper
     }
     public static function sendSMSTo(string $phoneNumber, string $message, string $auth): bool
     {
-        if (substr($phoneNumber, 0, 4) !== "+358" || ($phoneNumber !== $_ENV["ALLOWED_PHONE"] && !in_array($phoneNumber, self::allowedPhones))) {
+        if (substr($phoneNumber, 0, 4) !== "+358"){// || ($phoneNumber !== $_ENV["ALLOWED_PHONE"] && !in_array($phoneNumber, self::allowedPhones))) {
             return false;
         }
         $sms = array(
