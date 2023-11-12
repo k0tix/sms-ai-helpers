@@ -105,7 +105,7 @@ class Routes
         $this->db->getDB()
             ->prepare("UPDATE pending_data SET status = ?, response = ? WHERE id = ?")
             ->execute(["DONE", $endResult, $latestId]);
-
+        $decodedBody["smsAuth"]=base64_encode($decodedBody["smsAuth"]);
         $dlUrl = $_ENV["DL_BASE_URL"] . "/summary?id=" . $eventId;
         $smsResult = Helper::sendSMSTo($decodedBody["phone"], "SMSummarizer result is ready, dl at: $dlUrl", $decodedBody["smsAuth"]);
 
