@@ -37,9 +37,9 @@ class Routes
 
     public function randomfactGET()
     {
-        $url = "https://en.wikipedia.org/wiki/Stock_car_racing";
+        $url = "https://en.wikipedia.org/wiki/Special:Random";
         $page = Helper::cleanupUrlData(Helper::getUrlData($url));
-        $result = Helper::generateLLMresult([$page], 1);
+        $result = Helper::generateLLMresult([$page], 2.1);
         return [200, $result];
     }
 
@@ -90,7 +90,7 @@ class Routes
         fastcgi_finish_request();
 
 
-        $result = Helper::generateLLMresult($pages, 1);
+        $result = Helper::generateLLMresult($pages, 1.01);
 
         $this->db->getDB()
             ->prepare("UPDATE pending_data SET status = ?, response = ? WHERE id = ?")
