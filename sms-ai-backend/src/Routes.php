@@ -86,7 +86,7 @@ class Routes
         $latestId = $this->db->getDB()->lastInsertId();
 
 
-        echo json_encode(["id" => $latestId]);
+        echo json_encode(["id" => $eventId]);
         fastcgi_finish_request();
 
 
