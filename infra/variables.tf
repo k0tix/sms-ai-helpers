@@ -17,7 +17,7 @@ variable "plans" {
     default = {
         "lb" = "1xCPU-2GB"
         "app" = "2xCPU-4GB"
-        "db" = "4xCPU-8GB"
+        "db" = "HICPU-32xCPU-48GB"
     }
 }
 
@@ -26,7 +26,7 @@ variable "storages" {
     default = {
         "1xCPU-2GB"  = "50"
         "2xCPU-4GB"  = "80"
-        "4xCPU-8GB"  = "160"
+        "HICPU-32xCPU-48GB"  = "160"
 
     }
 }

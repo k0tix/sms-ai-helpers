@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request
 from transformers import pipeline
-from evaluate import load
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
