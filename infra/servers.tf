@@ -50,45 +50,45 @@ resource "upcloud_server" "app" {
   }
 }
 
-#resource "upcloud_server" "backend" {
-#  hostname = "backend.startup.io"
-#  zone = var.zone
-#  plan = var.plans["app"]
-#  count = var.app-scaling
-#
-#  login {
-#    user = "tf"
-#    keys = [
-#        var.public_key,
-#    ]
-#    create_password = false
-#    password_delivery = "none"
-#  }
-#
-#  template {
-#    size = 25 
-#    
-#    # Template UUID for Ubuntu 20.04
-#    storage = "01000000-0000-4000-8000-000030200200"
-#  }
-#  
-#  network_interface {
-#    type = "public"
-#  }
-#  
-#  connection {
-#        type     = "ssh"
-#        user     = "tf"
-#        private_key = file("~/.ssh/terraUpcloud")
-#        host     = self.network_interface[0].ip_address
-#    }
-#  provisioner "remote-exec" {
-#    script = "init.sh"
-#  }
-#
-#  provisioner "file" {
-#    source = "../sms-ai-backend"
-#    destination = "sms-ai-backend"
-#  }
-#  
-#}
+resource "upcloud_server" "backend" {
+  hostname = "backend.startup.io"
+  zone = var.zone
+  plan = var.plans["app"]
+  count = var.app-scaling
+
+  login {
+    user = "tf"
+    keys = [
+        var.public_key,
+    ]
+    create_password = false
+    password_delivery = "none"
+  }
+
+  template {
+    size = 25 
+    
+    # Template UUID for Ubuntu 20.04
+    storage = "01000000-0000-4000-8000-000030200200"
+  }
+  
+  network_interface {
+    type = "public"
+  }
+  
+  connection {
+        type     = "ssh"
+        user     = "tf"
+        private_key = file("~/.ssh/terraUpcloud")
+        host     = self.network_interface[0].ip_address
+    }
+  provisioner "remote-exec" {
+    script = "init.sh"
+  }
+
+  provisioner "file" {
+    source = "../sms-ai-backend/"
+    destination = "sms-ai-backend"
+  }
+  
+}
