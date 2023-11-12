@@ -59,7 +59,9 @@ class Helper
             "message" => $message,
             'dryrun' => 'yes'
         );
-
+        if($_ENV["DISABLE_DRYRUN_SMS"] === "YES") {
+            unset($sms['dryrun']);
+        }
         $context = stream_context_create(array(
             'http' => array(
                 'method' => 'POST',
