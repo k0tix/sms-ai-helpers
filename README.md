@@ -12,4 +12,4 @@
 8. Set your 46elks API credentials from the settings page (extensions top right corner)
 9. SUMMARIZE YOUR TABS!
 10. ???
-11. Profit! (you get a text message with a summary of your tabs in a few minutes)
+11. Profit! (you will get a text message from our trustworthy background worker "SMSPena" with a summary of your tabs in a few minutes 😉)
