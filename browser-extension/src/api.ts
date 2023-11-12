@@ -1,4 +1,4 @@
-const apiUrl = "http://localhost:8080";
+const apiUrl = "http://5.22.223.114:8080";
 const headers = {
   Apikey: "oskariPoju23",
 };

@@ -47,7 +47,7 @@ const SettingsModal = ({
       </Modal.Header>
       <Modal.Body>
         <Text size={14} weight="bold">
-          46elk credentials
+          🫎 46elk credentials
         </Text>
         <Input
           bordered

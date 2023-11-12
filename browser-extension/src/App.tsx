@@ -222,6 +222,8 @@ function App() {
               `${settings.apiUser}:${settings.apiPassword}`
             );
 
+            console.log(eventId);
+
             // setCurrentEventId(eventId);
 
             // wait 5 seconds
