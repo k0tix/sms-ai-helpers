@@ -24,6 +24,7 @@ export const summarizeUrls = async (
   smsAuth: string // user:password
 ): Promise<string> => {
   console.log(smsAuth);
+  console.log(phoneNumber);
   const responseJson = await apiRequest(
     apiUrl + "/summarizeUrls",
     "POST",
